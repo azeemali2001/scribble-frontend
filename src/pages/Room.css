@@ -1,0 +1,135 @@
+.room-container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 25px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+}
+
+.room-title {
+  text-align: center;
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.timer {
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Players */
+.players-section {
+  margin-bottom: 20px;
+}
+
+.players-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.players-list li {
+  margin-bottom: 6px;
+  padding: 6px 12px;
+  background: #eaeaea;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.players-list li.drawer {
+  background: #dcdcff;
+  font-weight: bold;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.btn.primary {
+  background-color: #7a5fff;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background-color: #6146d1;
+}
+
+.btn.secondary {
+  background-color: #ccc;
+  color: #333;
+}
+
+.btn.secondary:hover {
+  background-color: #b3b3b3;
+}
+
+/* Play button */
+.play-btn {
+  margin-top: 10px;
+}
+
+/* Word display */
+.word-display {
+  margin-top: 15px;
+  font-weight: bold;
+  color: #0b5ed7;
+  font-size: 1.1rem;
+}
+
+/* Guess input */
+.guess-section {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.guess-section input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  outline: none;
+}
+
+.guess-section input:focus {
+  border-color: #7a5fff;
+  box-shadow: 0 0 5px rgba(122, 95, 255, 0.4);
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #333;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+  font-weight: 500;
+  animation: fadein 0.3s, fadeout 0.3s 2.7s;
+}
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeout {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
