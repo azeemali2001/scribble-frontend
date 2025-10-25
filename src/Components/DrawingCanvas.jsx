@@ -1,3 +1,4 @@
+// src/components/DrawingCanvas.js
 import React, { useEffect, useRef, useState } from "react";
 import { socket } from "../socket";
 import "./DrawingCanvas.css";
@@ -7,6 +8,7 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
   const ctxRef = useRef(null);
   const drawing = useRef(false);
   const last = useRef({ x: 0, y: 0 });
+
   const [color, setColor] = useState("#000000");
   const [brushSize, setBrushSize] = useState(6);
   const [isEraser, setIsEraser] = useState(false);
@@ -14,6 +16,7 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
   const undoStack = useRef([]);
   const UNDO_LIMIT = 12;
 
+  // Initialize canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
@@ -39,15 +42,18 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
     // eslint-disable-next-line
   }, []);
 
-
-  const pushUndo = (skipEmit = false) => {
+  // Save canvas state for undo
+  const pushUndo = () => {
     try {
       const data = canvasRef.current.toDataURL();
       undoStack.current.push(data);
       if (undoStack.current.length > UNDO_LIMIT) undoStack.current.shift();
-    } catch {}
+    } catch (err) {
+      console.error("Undo error:", err);
+    }
   };
 
+  // Undo
   const doUndo = () => {
     if (!undoStack.current.length) return;
     const lastImage = undoStack.current.pop();
@@ -55,41 +61,42 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
     drawImage(lastImage);
   };
 
-
-
+  // Draw image helper
   const drawImage = (data) => {
     const img = new Image();
     img.onload = () => {
-      ctxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      ctxRef.current.drawImage(
-        img,
-        0,
-        0,
-        canvasRef.current.width / (window.devicePixelRatio || 1),
-        canvasRef.current.height / (window.devicePixelRatio || 1)
-      );
+      const canvas = canvasRef.current;
+      const dpr = window.devicePixelRatio || 1;
+      ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
+      ctxRef.current.drawImage(img, 0, 0, canvas.width / dpr, canvas.height / dpr);
     };
     img.src = data;
   };
 
+  // Get pointer position
   const getPointerPos = (ev) => {
     const rect = canvasRef.current.getBoundingClientRect();
     return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   };
 
+  // Pointer events
   const pointerDown = (ev) => {
     if (!isDrawer) return;
     ev.preventDefault();
     drawing.current = true;
     pushUndo();
+
     const pos = getPointerPos(ev);
     last.current = pos;
+
     ctxRef.current.beginPath();
     ctxRef.current.moveTo(pos.x, pos.y);
   };
 
   const pointerMove = (ev) => {
     if (!drawing.current || !isDrawer) return;
+    ev.preventDefault();
+
     const pos = getPointerPos(ev);
     const size = isEraser ? brushSize * 2 : brushSize;
     const strokeColor = isEraser ? "#ffffff" : color;
@@ -114,12 +121,14 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
     last.current = pos;
   };
 
-  const pointerUp = () => {
+  const pointerUp = (ev) => {
     if (!drawing.current || !isDrawer) return;
+    ev.preventDefault();
     drawing.current = false;
     ctxRef.current.closePath();
   };
 
+  // Socket listeners
   useEffect(() => {
     socket.on("drawing", ({ x0, y0, x1, y1, color, lineWidth }) => {
       ctxRef.current.beginPath();
@@ -155,6 +164,7 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
             disabled={!isDrawer}
           />
         </label>
+
         <label>
           Size
           <input
@@ -166,10 +176,15 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
             disabled={!isDrawer}
           />
         </label>
+
         <button onClick={() => setIsEraser(!isEraser)} disabled={!isDrawer} className="btn">
           {isEraser ? "Eraser ✓" : "Eraser"}
         </button>
-        <button onClick={doUndo} disabled={!isDrawer} className="btn">Undo</button>
+
+        <button onClick={doUndo} disabled={!isDrawer} className="btn">
+          Undo
+        </button>
+
         <button
           onClick={() => {
             const link = document.createElement("a");
@@ -190,6 +205,9 @@ export default function DrawingCanvas({ roomId, isDrawer, username }) {
         onPointerMove={pointerMove}
         onPointerUp={pointerUp}
         onPointerLeave={pointerUp}
+        onTouchStart={pointerDown}
+        onTouchMove={pointerMove}
+        onTouchEnd={pointerUp}
       />
 
       {!isDrawer && <p className="watch-only">You can only watch.</p>}
